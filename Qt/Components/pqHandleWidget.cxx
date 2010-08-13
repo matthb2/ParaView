@@ -125,10 +125,19 @@ pqHandleWidget::~pqHandleWidget()
 //-----------------------------------------------------------------------------
 void pqHandleWidget::pick(double dx, double dy, double dz)
 {
+  vtkSMRepresentationProxy* widget = this->getWidgetProxy();
+
+  if (!widget)
+    {
+    printf("skipping pick, no widget proxy.\n");
+    return;
+    }
+
   vtkSMProxy* widget = this->getWidgetProxy();
   vtkSMPropertyHelper(widget, "WorldPosition").Set(0, dx);
   vtkSMPropertyHelper(widget, "WorldPosition").Set(1, dy);
   vtkSMPropertyHelper(widget, "WorldPosition").Set(2, dz);
+
   widget->UpdateVTKObjects();
   this->setModified();
   this->render();
@@ -137,6 +146,14 @@ void pqHandleWidget::pick(double dx, double dy, double dz)
 //-----------------------------------------------------------------------------
 void pqHandleWidget::createWidget(pqServer* server)
 {
+
+  if (!server)
+    {
+    printf("oops, server was null...\n");
+    return;
+    }
+  printf("server NOT null...\n");
+
   vtkSMNewWidgetRepresentationProxy* widget =
     pqApplicationCore::instance()->get3DWidgetFactory()->
     get3DWidget("PointSourceWidgetRepresentation", server);
@@ -186,6 +203,12 @@ void pqHandleWidget::onWidgetVisibilityChanged(bool visible)
 void pqHandleWidget::resetBounds(double input_bounds[6])
 {
   vtkSMNewWidgetRepresentationProxy* widget = this->getWidgetProxy();
+
+  if (!widget)
+    {
+    printf("not resetting bounds because widget proxy is null.\n");
+    return;
+    }
   double input_origin[3];
   input_origin[0] = (input_bounds[0] + input_bounds[1]) / 2.0;
   input_origin[1] = (input_bounds[2] + input_bounds[3]) / 2.0;

@@ -44,6 +44,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "vtkSMPropertyHelper.h"
 #include "vtkSMProxyManager.h"
 #include "vtkSMProxyProperty.h"
+#include "vtkProcessModuleConnectionManager.h"
 #include "vtkSMRenderViewProxy.h"
 #include "vtkSMSourceProxy.h"
 
@@ -184,6 +185,11 @@ pq3DWidget::~pq3DWidget()
 QList<pq3DWidget*> pq3DWidget::createWidgets(vtkSMProxy* refProxy, vtkSMProxy* pxy)
 {
   QList<pq3DWidget*> widgets;
+
+  if (pxy->GetConnectionID() == vtkProcessModuleConnectionManager::GetNullConnectionID())
+    {
+    return widgets;
+    }
 
   QList<pq3DWidgetInterface*> interfaces =
     pqApplicationCore::instance()->getPluginManager()->findInterfaces<pq3DWidgetInterface*>();
@@ -431,6 +437,12 @@ void pq3DWidget::setHints(vtkPVXMLElement* hints)
 void pq3DWidget::setControlledProperty(const char* function,
   vtkSMProperty* controlled_property)
 {
+  if (!this->Internal->WidgetProxy)
+    {
+    printf("skipping set setcontrolledproperty\n");
+    return;
+    }
+
   this->Internal->PropertyMap.insert(
     this->Internal->WidgetProxy->GetProperty(function),
     controlled_property);
