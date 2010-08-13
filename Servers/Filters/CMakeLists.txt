@@ -49,6 +49,7 @@ SET(Filters_SRCS
   vtkCompositeDataToUnstructuredGridFilter.cxx
   vtkCompositeRepresentation.cxx
   vtkContextNamedOptions.cxx
+  vtkCoProcessorTransfer.cxx
   vtkCSVExporter.cxx
   vtkCSVWriter.cxx
   vtkCubeAxesRepresentation.cxx
@@ -91,6 +92,7 @@ SET(Filters_SRCS
   vtkMaterialInterfaceProcessLoading.cxx
   vtkMaterialInterfaceProcessRing.cxx
   vtkMaterialInterfaceToProcMap.cxx
+  vtkLiveDataSource.cxx
   vtkMergeArrays.cxx
   vtkMergeCompositeDataSet.cxx
   vtkMinMax.cxx
