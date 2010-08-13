@@ -12,6 +12,14 @@ IF (PARAVIEW_ENABLE_PYTHON)
 
   ADD_TEST(CoProcessingTestPythonScript ${EXECUTABLE_OUTPUT_PATH}/CoProcessingPythonScriptExample ${CoProcessing_SOURCE_DIR}/CoProcessor/Testing/Cxx/PythonScriptTest.py)
 ENDIF (PARAVIEW_ENABLE_PYTHON)
+ADD_EXECUTABLE(simpleDriver simpleDriver.cxx)
+TARGET_LINK_LIBRARIES(simpleDriver vtkCoProcessor)
+
+ADD_EXECUTABLE(simpleReaderDriver simpleReaderDriver.cxx)
+TARGET_LINK_LIBRARIES(simpleReaderDriver vtkCoProcessor)
+
+ADD_EXECUTABLE(CoProcessingPythonScriptExample PythonScriptCoProcessingExample.cxx vtkPVCustomTestDriver.cxx)
+TARGET_LINK_LIBRARIES(CoProcessingPythonScriptExample vtkCoProcessor vtkCPTestDriver)
 
   # below is for doing image comparisons
   # they are not done directly in the above python script due to the fact
