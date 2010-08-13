@@ -61,6 +61,7 @@ SET(Filters_SRCS
   vtkExtractScatterPlot.cxx
   vtkFileSeriesReader.cxx
   vtkFileSeriesWriter.cxx
+  vtkFileSet.cxx
   vtkFlashContour.cxx
   vtkFlashReader.cxx
   vtkGlyph3DRepresentation.cxx
