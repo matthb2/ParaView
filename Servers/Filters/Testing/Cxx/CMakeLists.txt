@@ -11,6 +11,7 @@ SET(ServersFilters_SRCS
   TestMPI
   TestTilesHelper
   TestSortingTable
+  TestLiveSource
   )
 
 IF (VTK_DATA_ROOT)
