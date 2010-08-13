@@ -591,7 +591,7 @@ int vtkProcessModule::AcceptConnectionsOnPort(int port)
 }
 
 //-----------------------------------------------------------------------------
-void vtkProcessModule::AcceptConnectionsOnPort(int data_server_port,
+void vtkProcessModule::AcceptConnectionsOnPort(int data_server_port, 
   int render_server_port, int &ds_id, int &rs_id)
 {
     ds_id = this->ConnectionManager->AcceptConnectionsOnPort(
@@ -625,12 +625,6 @@ bool vtkProcessModule::IsAcceptingConnections()
 }
 
 //-----------------------------------------------------------------------------
-vtkIdType vtkProcessModule::CoProcessorConnectToRemote(const char* servername, int port)
-{
-  return this->ConnectionManager->OpenCoProcessorConnection(servername, port);
-}
-
-//-----------------------------------------------------------------------------
 vtkIdType vtkProcessModule::ConnectToRemote(const char* servername, int port)
 {
   if (this->DisableNewConnections)
@@ -641,6 +635,12 @@ vtkIdType vtkProcessModule::ConnectToRemote(const char* servername, int port)
   this->IsAutoMPI = 0;
   return this->ConnectionManager->OpenConnection(servername, port);
 }
+//-----------------------------------------------------------------------------
+vtkIdType vtkProcessModule::CoProcessorConnectToRemote(const char* servername, int port)
+{
+  return this->ConnectionManager->OpenCoProcessorConnection(servername, port);
+}
+
 //-----------------------------------------------------------------------------
 vtkIdType vtkProcessModule::ConnectToRemote(const char* dataserver_host, 
   int dataserver_port, const char* renderserver_host, int renderserver_port)
