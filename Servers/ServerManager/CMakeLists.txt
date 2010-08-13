@@ -109,6 +109,7 @@ SET(Kit_SRCS
   vtkSMNetworkImageSourceProxy.cxx
   vtkSMParallelCoordinatesRepresentationProxy.cxx
   vtkSMPQStateLoader.cxx
+  vtkSMCPStateLoader.cxx
   vtkSMPSWriterProxy.cxx
   vtkSMPluginManager.cxx
   vtkSMPluginProxy.cxx
