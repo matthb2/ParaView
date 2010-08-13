@@ -594,10 +594,16 @@ int vtkProcessModule::AcceptConnectionsOnPort(int port)
 void vtkProcessModule::AcceptConnectionsOnPort(int data_server_port,
   int render_server_port, int &ds_id, int &rs_id)
 {
-  ds_id = this->ConnectionManager->AcceptConnectionsOnPort(
-    data_server_port, vtkProcessModuleConnectionManager::DATA_SERVER);
-  rs_id = this->ConnectionManager->AcceptConnectionsOnPort(
-    render_server_port, vtkProcessModuleConnectionManager::RENDER_SERVER);
+    ds_id = this->ConnectionManager->AcceptConnectionsOnPort(
+      data_server_port, vtkProcessModuleConnectionManager::DATA_SERVER);
+    rs_id = this->ConnectionManager->AcceptConnectionsOnPort(
+      render_server_port, vtkProcessModuleConnectionManager::RENDER_SERVER);
+}
+
+//-----------------------------------------------------------------------------
+int vtkProcessModule::AcceptCoProcessorConnectionOnPort(int port)
+{
+  return this->ConnectionManager->AcceptConnectionsOnPort(port, 99);
 }
 
 //-----------------------------------------------------------------------------
@@ -631,17 +637,21 @@ vtkIdType vtkProcessModule::ConnectToRemote(const char* servername, int port)
 }
 
 //-----------------------------------------------------------------------------
-vtkIdType vtkProcessModule::ConnectToRemote(const char* dataserver_host,
-  int dataserver_port, const char* renderserver_host, int renderserver_port)
+vtkIdType vtkProcessModule::CoProcessorConnectToRemote(const char* servername, int port)
+{
+  return this->ConnectionManager->OpenCoProcessorConnection(servername, port);
+}
+
+//-----------------------------------------------------------------------------
+vtkIdType vtkProcessModule::ConnectToRemote(const char* servername, int port)
 {
   if (this->DisableNewConnections)
-    {
-    vtkErrorMacro("Cannot create new connections.");
-    return 0;
-    }
+  {
+     vtkErrorMacro("Cannot create new connections.");
+     return 0;
+  }
   this->IsAutoMPI = 0;
-  return this->ConnectionManager->OpenConnection(
-    dataserver_host, dataserver_port, renderserver_host, renderserver_port);
+  return this->ConnectionManager->OpenConnection(servername, port);
 }
 
 //-----------------------------------------------------------------------------
@@ -1859,7 +1869,30 @@ vtkSocketController* vtkProcessModule::GetActiveRenderServerSocketController()
 }
 
 //-----------------------------------------------------------------------------
+<<<<<<< HEAD
 void vtkProcessModule::PushUndo(vtkIdType id, const char* label,
+=======
+vtkMultiProcessController* vtkProcessModule::
+GetControllerForConnectionId(vtkIdType connectionId)
+{
+  vtkProcessModuleConnection* connection =
+    this->ConnectionManager->GetConnectionFromID(connectionId);
+  if (connection)
+    {
+    return connection->GetController();
+    }
+  return 0;
+}
+
+//-----------------------------------------------------------------------------
+vtkProcessModuleConnection* vtkProcessModule::
+GetConnectionFromId(vtkIdType connectionId)
+{
+  return this->ConnectionManager->GetConnectionFromID(connectionId);
+}
+
+//-----------------------------------------------------------------------------
+void vtkProcessModule::PushUndo(vtkIdType id, const char* label, 
   vtkPVXMLElement* root)
 {
   this->ConnectionManager->PushUndo(id, label, root);
