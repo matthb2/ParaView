@@ -18,9 +18,6 @@ TARGET_LINK_LIBRARIES(simpleDriver vtkCoProcessor)
 ADD_EXECUTABLE(simpleReaderDriver simpleReaderDriver.cxx)
 TARGET_LINK_LIBRARIES(simpleReaderDriver vtkCoProcessor)
 
-ADD_EXECUTABLE(CoProcessingPythonScriptExample PythonScriptCoProcessingExample.cxx vtkPVCustomTestDriver.cxx)
-TARGET_LINK_LIBRARIES(CoProcessingPythonScriptExample vtkCoProcessor vtkCPTestDriver)
-
   # below is for doing image comparisons
   # they are not done directly in the above python script due to the fact
   # that they would make the python script rather ugly
