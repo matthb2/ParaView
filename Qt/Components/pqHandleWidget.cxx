@@ -125,7 +125,7 @@ pqHandleWidget::~pqHandleWidget()
 //-----------------------------------------------------------------------------
 void pqHandleWidget::pick(double dx, double dy, double dz)
 {
-  vtkSMRepresentationProxy* widget = this->getWidgetProxy();
+  vtkSMProxy* widget = this->getWidgetProxy();
 
   if (!widget)
     {
@@ -133,7 +133,6 @@ void pqHandleWidget::pick(double dx, double dy, double dz)
     return;
     }
 
-  vtkSMProxy* widget = this->getWidgetProxy();
   vtkSMPropertyHelper(widget, "WorldPosition").Set(0, dx);
   vtkSMPropertyHelper(widget, "WorldPosition").Set(1, dy);
   vtkSMPropertyHelper(widget, "WorldPosition").Set(2, dz);
