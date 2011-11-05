@@ -1904,6 +1904,18 @@ OS is the output scalar; M represents the maximum value; G represents the Gaussi
         command="ListenForCoProcessorConnection" />
 
       <Property
+        name="AckData"
+        command="AckData" />
+
+      <Property
+        name="BlockSim"
+        command="BlockSim" />
+
+      <Property
+        name="FlushCache"
+        command="FlushCache" />
+
+      <Property
         name="Poll"
         command="PollForNewDataObjects" />
 

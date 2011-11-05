@@ -72,6 +72,10 @@ public:
   virtual void ListenForCoProcessorConnection();
 
   virtual int PollForNewDataObjects();
+  
+  virtual void AckData();
+  virtual void BlockSim();
+  virtual void FlushCache();
 
   virtual void SendCoProcessorConnectionInfo();
   virtual void SetupCoProcessorConnections();
@@ -108,6 +112,10 @@ protected:
   int         Port;
   int         CacheSize;
   int         SocketsPerProcess;
+  bool	      HasBeenRendered;
+  bool	      ShouldBlockSim;
+  bool	      SimIsBlocked;
+  bool	      ShouldWaitForPoll;
 
 private:
   vtkLiveDataSource(const vtkLiveDataSource&); // Not implemented.

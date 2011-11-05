@@ -107,6 +107,8 @@ public:
   QPushButton*  StopButton;
   QPushButton*  PollButton;
   QPushButton*  ListenButton;
+  QPushButton*  AckDataButton;
+  QPushButton*  BlockSimButton;
   QLabel*       LastTimeLabel;
   QCheckBox*    SnapToLatestCheckBox;
   QTreeWidget*  TreeWidget;
@@ -154,10 +156,14 @@ pqLiveSourcePanel::pqLiveSourcePanel(pqProxy* object_proxy, QWidget* p) :
   QHBoxLayout* buttonLayout = new QHBoxLayout;
   this->Internal->PollButton = new QPushButton("Poll");
   this->Internal->StartButton = new QPushButton("Start");
+  this->Internal->AckDataButton = new QPushButton("AckData");
+  this->Internal->BlockSimButton = new QPushButton("Block Sim");
   this->Internal->StopButton = new QPushButton("Stop");
   buttonLayout->addWidget(this->Internal->PollButton);
   buttonLayout->addWidget(this->Internal->StartButton);
   buttonLayout->addWidget(this->Internal->StopButton);
+  buttonLayout->addWidget(this->Internal->AckDataButton);
+  buttonLayout->addWidget(this->Internal->BlockSimButton);
 
   //this->Internal->ListenButton = new QPushButton("Listen");
   //this->Internal->ListenButton->setCheckable(true);
@@ -183,6 +189,10 @@ pqLiveSourcePanel::pqLiveSourcePanel(pqProxy* object_proxy, QWidget* p) :
                 SLOT(onStartClicked()));
   this->connect(this->Internal->StopButton, SIGNAL(clicked()),
                 SLOT(onStopClicked()));
+  this->connect(this->Internal->AckDataButton, SIGNAL(clicked()),
+                SLOT(onAckClicked()));
+  this->connect(this->Internal->BlockSimButton, SIGNAL(clicked()),
+                SLOT(onBlockSimClicked()));
   //this->connect(this->Internal->ListenButton, SIGNAL(clicked()),
   //              SLOT(onListenModeChanged()));
 
@@ -506,7 +516,16 @@ void pqLiveSourcePanel::onStopClicked()
   this->Internal->StartButton->setEnabled(true);
   this->Internal->StopButton->setEnabled(false);
 }
-
+//-----------------------------------------------------------------------------
+void pqLiveSourcePanel::onAckClicked()
+{
+  this->Internal->LiveSource->InvokeCommand("AckData");
+}
+//-----------------------------------------------------------------------------
+void pqLiveSourcePanel::onBlockSimClicked()
+{
+  this->Internal->LiveSource->InvokeCommand("BlockSim");
+}
 //-----------------------------------------------------------------------------
 void pqLiveSourcePanel::onTimeOut()
 {

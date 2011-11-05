@@ -146,6 +146,10 @@ vtkLiveDataSource::vtkLiveDataSource()
   this->Internal->Observer->Source = this;
   vtkProcessModule::GetProcessModule()->AddObserver(
     vtkCommand::ConnectionCreatedEvent, this->Internal->Observer);
+  this->HasBeenRendered = true;
+  this->ShouldBlockSim = false;
+  this->SimIsBlocked = false;
+  this->ShouldWaitForPoll = false;
 
 }
 
@@ -363,12 +367,24 @@ void vtkLiveDataSource::SetCacheSize(int cacheSize)
 void vtkLiveDataSource::ReceiveExtract()
 {
   myprint("receive_extract");
+  
+  if(this->ShouldBlockSim && !(this->HasBeenRendered) && !(this->ShouldWaitForPoll))
+  {
+	  this->SimIsBlocked = true;
+	  return;
+  }
+  this->SimIsBlocked = false;
+  if(this->ShouldBlockSim && this->ShouldWaitForPoll)
+  {
+	  this->PollForNewDataObjects();
+	  return;
+  }
 
   vtkTimerLog::MarkStartEvent("vtkLiveDataSource::ReceiveExtract");
 
   // chop storage vectors if we are at the cache limit
-  if (this->CacheSize && this->Internal->TimeSteps.size() >= this->CacheSize)
-    {
+  if (this->CacheSize && this->Internal->TimeSteps.size() >= this->CacheSize) 
+    { //FIXME: This probably shouldn't happen if we're dropping extra (new) steps
     this->ChopVectors(this->CacheSize - 1);
     }
 
@@ -414,7 +430,12 @@ void vtkLiveDataSource::ReceiveExtract()
         vtkErrorMacro("Error receiving data object from controller.");
         continue;
         }
-
+      if(!(this->ShouldBlockSim) && !(this->HasBeenRendered))
+      {
+	      dataObject->Delete();
+              vtkTimerLog::MarkEndEvent("vtkLiveDataSource::ReceiveExtract");
+	      return;
+      }
       vtkInternal::DataPiecesVectorType& dataPiecesVector =
         this->Internal->DataObjectCache[sinkTag];
 
@@ -508,9 +529,10 @@ void vtkLiveDataSource::SendState()
 int vtkLiveDataSource::PollForNewDataObjects()
 {
   myprint("poll");
-
+  ShouldWaitForPoll = false;
   if (this->Internal->NewDataAvailable)
     {
+    this->SimIsBlocked = true;	    
     myprint("new_data_available");
     this->Internal->NewDataAvailable = false;
     this->Internal->NumberOfTimeSteps = static_cast<int>(this->Internal->TimeSteps.size());
@@ -524,6 +546,43 @@ int vtkLiveDataSource::PollForNewDataObjects()
     }
 
   return 0;
+}
+
+//-----------------------------------------------------------------------------
+void vtkLiveDataSource::BlockSim()
+{
+	this->ShouldBlockSim = !(this->ShouldBlockSim);
+	if(vtkProcessModule::GetProcessModule()->GetPartitionId() == 0)
+	{
+		if(this->ShouldBlockSim)
+		{
+			std::cout << "Will Block Simulation" << std::endl;
+		}
+		else
+		{
+			std::cout << "Won't Block Simulation" << std::endl;
+		}
+	}
+}
+
+//-----------------------------------------------------------------------------
+void vtkLiveDataSource::AckData()
+{
+	std::cout << "You Called ackData!" << std::endl;
+	this->HasBeenRendered = true;
+	if(this->SimIsBlocked && this->ShouldBlockSim)
+	{
+		this->ShouldWaitForPoll=true;
+		this->ReceiveExtract();
+	}
+}
+
+//-----------------------------------------------------------------------------
+void vtkLiveDataSource::FlushCache()
+{
+	ChopVectors(0);
+	if(vtkProcessModule::GetProcessModule()->GetPartitionId() == 0)
+		std::cout << "Flushing Cache" << std::endl;
 }
 
 //-----------------------------------------------------------------------------
@@ -592,6 +651,8 @@ int vtkLiveDataSource::RequestInformation(
     myprint("request_information, last time: " << timeSteps.back());
     outInfo->Set(vtkStreamingDemandDrivenPipeline::TIME_STEPS(),
                &timeSteps[0], static_cast<int>(timeSteps.size()));
+
+    this->HasBeenRendered=false;
     }
   else
     {
@@ -688,7 +749,8 @@ int vtkLiveDataSource::RequestData(vtkInformation *request,
         }
       }
     }
-
+  if(this->Internal->TimeSteps.size() > 0)
+     this->HasBeenRendered=false;
   return 1;
 }
 

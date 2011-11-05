@@ -62,6 +62,8 @@ protected slots:
 
   void onStartClicked();
   void onStopClicked();
+  void onAckClicked();
+  void onBlockSimClicked();
   void onTimeOut();
   void onListenModeChanged();
   void onItemActivated(QTreeWidgetItem* item);
