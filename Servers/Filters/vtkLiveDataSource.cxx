@@ -149,7 +149,6 @@ vtkLiveDataSource::vtkLiveDataSource()
   this->HasBeenRendered = true;
   this->ShouldBlockSim = false;
   this->SimIsBlocked = false;
-  this->ShouldWaitForPoll = false;
 
 }
 
@@ -368,17 +367,12 @@ void vtkLiveDataSource::ReceiveExtract()
 {
   myprint("receive_extract");
   
-  if(this->ShouldBlockSim && !(this->HasBeenRendered) && !(this->ShouldWaitForPoll))
+  if((this->ShouldBlockSim && !(this->HasBeenRendered)) || this->Internal->NewDataAvailable)
   {
 	  this->SimIsBlocked = true;
 	  return;
   }
   this->SimIsBlocked = false;
-  if(this->ShouldBlockSim && this->ShouldWaitForPoll)
-  {
-	  this->PollForNewDataObjects();
-	  return;
-  }
 
   vtkTimerLog::MarkStartEvent("vtkLiveDataSource::ReceiveExtract");
 
@@ -529,7 +523,6 @@ void vtkLiveDataSource::SendState()
 int vtkLiveDataSource::PollForNewDataObjects()
 {
   myprint("poll");
-  ShouldWaitForPoll = false;
   if (this->Internal->NewDataAvailable)
     {
     this->SimIsBlocked = true;	    
@@ -563,6 +556,10 @@ void vtkLiveDataSource::BlockSim()
 			std::cout << "Won't Block Simulation" << std::endl;
 		}
 	}
+	if(!this->ShouldBlockSim)
+	{
+		this->SimIsBlocked = false;
+	}
 }
 
 //-----------------------------------------------------------------------------
@@ -572,7 +569,6 @@ void vtkLiveDataSource::AckData()
 	this->HasBeenRendered = true;
 	if(this->SimIsBlocked && this->ShouldBlockSim)
 	{
-		this->ShouldWaitForPoll=true;
 		this->ReceiveExtract();
 	}
 }
