@@ -367,7 +367,7 @@ void vtkLiveDataSource::ReceiveExtract()
 {
   myprint("receive_extract");
   
-  if((this->ShouldBlockSim && !(this->HasBeenRendered)) || this->Internal->NewDataAvailable)
+  if((this->ShouldBlockSim && !(this->HasBeenRendered)))
   {
 	  this->SimIsBlocked = true;
 	  return;
@@ -525,7 +525,6 @@ int vtkLiveDataSource::PollForNewDataObjects()
   myprint("poll");
   if (this->Internal->NewDataAvailable)
     {
-    this->SimIsBlocked = true;	    
     myprint("new_data_available");
     this->Internal->NewDataAvailable = false;
     this->Internal->NumberOfTimeSteps = static_cast<int>(this->Internal->TimeSteps.size());
