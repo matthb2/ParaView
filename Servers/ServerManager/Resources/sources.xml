@@ -1908,6 +1908,10 @@ OS is the output scalar; M represents the maximum value; G represents the Gaussi
         command="AckData" />
 
       <Property
+        name="LockLiveData"
+        command="LockLiveData" />
+
+      <Property
         name="BlockSim"
         command="BlockSim" />
 

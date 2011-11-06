@@ -574,6 +574,12 @@ void vtkLiveDataSource::AckData()
 }
 
 //-----------------------------------------------------------------------------
+void vtkLiveDataSource::LockLiveData()
+{
+	this->HasBeenRendered = false;
+}
+
+//-----------------------------------------------------------------------------
 void vtkLiveDataSource::FlushCache()
 {
 	ChopVectors(0);
@@ -648,7 +654,6 @@ int vtkLiveDataSource::RequestInformation(
     outInfo->Set(vtkStreamingDemandDrivenPipeline::TIME_STEPS(),
                &timeSteps[0], static_cast<int>(timeSteps.size()));
 
-    this->HasBeenRendered=false;
     }
   else
     {
@@ -745,8 +750,6 @@ int vtkLiveDataSource::RequestData(vtkInformation *request,
         }
       }
     }
-  if(this->Internal->TimeSteps.size() > 0)
-     this->HasBeenRendered=false;
   return 1;
 }
 

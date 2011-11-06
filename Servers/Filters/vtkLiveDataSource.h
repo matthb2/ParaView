@@ -76,6 +76,7 @@ public:
   virtual void AckData();
   virtual void BlockSim();
   virtual void FlushCache();
+  virtual void LockLiveData();
 
   virtual void SendCoProcessorConnectionInfo();
   virtual void SetupCoProcessorConnections();
