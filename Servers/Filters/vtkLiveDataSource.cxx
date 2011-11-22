@@ -44,7 +44,7 @@
 #include <vtkstd/algorithm>
 #include <vtksys/ios/sstream>
 
-#if 0
+#if 1
 #define myprint(msg)
 #else
 #define myprint(msg) \
@@ -375,12 +375,15 @@ void vtkLiveDataSource::ReceiveExtract()
   this->SimIsBlocked = false;
 
   vtkTimerLog::MarkStartEvent("vtkLiveDataSource::ReceiveExtract");
+  vtkTimerLog::MarkStartEvent("vtkLiveDataSource::ReceiveExtract::CacheResize");
 
   // chop storage vectors if we are at the cache limit
   if (this->CacheSize && this->Internal->TimeSteps.size() >= this->CacheSize) 
     { //FIXME: This probably shouldn't happen if we're dropping extra (new) steps
     this->ChopVectors(this->CacheSize - 1);
     }
+  vtkTimerLog::MarkEndEvent("vtkLiveDataSource::ReceiveExtract::CacheResize");
+  vtkTimerLog::MarkStartEvent("vtkLiveDataSource::ReceiveExtract::Receive");
 
   // Receive extract data on each socket communicator
   const size_t numberOfSocketCommunicators = this->Internal->SocketCommunicators.size();
@@ -398,8 +401,7 @@ void vtkLiveDataSource::ReceiveExtract()
     int sinkTag;
     int numberOfExtracts;
     vtkIdType timestep;
-    double time;
-
+    
     communicator->Receive(&timestep, 1, 1, 9998);
     communicator->Receive(&time, 1, 1, 9998);
     communicator->Receive(&numberOfExtracts, 1, 1, 9998);
@@ -430,6 +432,7 @@ void vtkLiveDataSource::ReceiveExtract()
               vtkTimerLog::MarkEndEvent("vtkLiveDataSource::ReceiveExtract");
 	      return;
       }
+  vtkTimerLog::MarkStartEvent("vtkLiveDataSource::ReceiveExtract::StorePieces");
       vtkInternal::DataPiecesVectorType& dataPiecesVector =
         this->Internal->DataObjectCache[sinkTag];
 
@@ -443,9 +446,13 @@ void vtkLiveDataSource::ReceiveExtract()
       dataPieces.resize(numberOfSocketCommunicators);
       dataPieces[commIndex] = dataObject;
       dataObject->Delete();
+
+  vtkTimerLog::MarkEndEvent("vtkLiveDataSource::ReceiveExtract::StorePieces");
       }
     }
 
+  vtkTimerLog::MarkEndEvent("vtkLiveDataSource::ReceiveExtract::Receive");
+  vtkTimerLog::MarkStartEvent("vtkLiveDataSource::ReceiveExtract::Callback");
   this->Internal->NewDataAvailable = true;
 
   if (this->Internal->NotifySocket)
@@ -453,6 +460,7 @@ void vtkLiveDataSource::ReceiveExtract()
     this->Internal->NotifySocket->Send("N", 1);
     }
 
+  vtkTimerLog::MarkEndEvent("vtkLiveDataSource::ReceiveExtract::Callback");
   vtkTimerLog::MarkEndEvent("vtkLiveDataSource::ReceiveExtract");
 }
 
@@ -564,7 +572,8 @@ void vtkLiveDataSource::BlockSim()
 //-----------------------------------------------------------------------------
 void vtkLiveDataSource::AckData()
 {
-	std::cout << "You Called ackData!" << std::endl;
+	if(vtkProcessModule::GetProcessModule()->GetPartitionId() == 0)
+		std::cout << "You Called ackData!" << std::endl;
 	this->HasBeenRendered = true;
 	if(this->SimIsBlocked && this->ShouldBlockSim)
 	{
