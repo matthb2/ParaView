@@ -1134,9 +1134,14 @@ void vtkPhastaReader::ReadGeomFile(char* geomFileName,
 
 	///CHANGE/////////////////////////////////////////////////////
 	bzero((void*)fieldName,255);
-	sprintf(fieldName,"%s@%d","number of interior tpblocks",partID_counter);
+	//sprintf(fieldName,"%s@%d","number of interior tpblocks",partID_counter);
+	sprintf(fieldName,"%s@%d","total number of interior tpblocks",partID_counter);
 	///CHANGE END//////////////////////////////////////////////////
+        array[0] = -1; // initialization very important in case the field is not found
 	readheader(&geomfile,fieldName,array,&expect,"integer","binary");
+	num_int_blocks = array[0];
+
+        //printf("1 tpblocks: %d\n", num_int_blocks);
 
 
 	/*readheader(&geomfile,
@@ -1146,7 +1151,33 @@ void vtkPhastaReader::ReadGeomFile(char* geomFileName,
 		"integer",
 		"binary");
 		*/
-	num_int_blocks = array[0];
+        if ( num_int_blocks == -1) {
+          // The field 'total number of interior tpblocks' was not found in the geombc file.
+          // Scan all the geombc file for the 'connectivity interior' fields to get this information. 
+          int iblk=0;
+          int neltp=0;
+          while(neltp != -1) {
+            // intfromfile is reinitialized to -1 every time.
+            // If connectivity interior@xxx is not found, then
+            // readheader will return intfromfile unchanged
+            array[0] = -1;                                                                          
+            iblk = iblk+1;
+	    bzero((void*)fieldName,255);
+	    sprintf(fieldName,"%s%d@%d","connectivity interior",iblk,partID_counter);
+//            call readheader(igeom,fname2,intfromfile,iseven,'integer',iotype)
+	    readheader(&geomfile,fieldName,array,&expect,"integer","binary");
+            neltp = array[0]; // -1 if fname2 was not found, >=0 otherwise
+          }
+          num_int_blocks = iblk-1;
+        }                                                                      
+                                                                                                       
+//        if (myrank == 0) then
+//          write(*,*) 'Number of interior topologies: ',itpblktot                   
+//        endif                                                                                          
+//        printf("2 tpblocks: %d\n", num_int_blocks);
+
+//	num_int_blocks = array[0];
+
 
 	vtkDebugMacro ( << "Nodes: " << num_nodes
 			<< "Elements: " << num_elems
