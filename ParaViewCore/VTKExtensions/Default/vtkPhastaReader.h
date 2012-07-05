@@ -1,7 +1,7 @@
 /*=========================================================================
 
   Program:   Visualization Toolkit
-  Module:    vtkPhastaReader.h
+  Module:    $RCSfile: vtkPhastaReader.h,v $
 
   Copyright (c) Ken Martin, Will Schroeder, Bill Lorensen
   All rights reserved.
@@ -22,23 +22,28 @@
 #ifndef __vtkPhastaReader_h
 #define __vtkPhastaReader_h
 
-#include "vtkPVVTKExtensionsDefaultModule.h" //needed for exports
 #include "vtkUnstructuredGridAlgorithm.h"
+#include "vtkPPhastaReader.h"
 
 class vtkUnstructuredGrid;
 class vtkPoints;
 class vtkDataSetAttributes;
 class vtkInformationVector;
 
+/////////////////////
+class vtkPVXMLParser;
+class vtkPhastaReader;
+//////////////////////
+
 //BTX
 struct vtkPhastaReaderInternal;
 //ETX
 
-class VTKPVVTKEXTENSIONSDEFAULT_EXPORT vtkPhastaReader : public vtkUnstructuredGridAlgorithm
+class VTK_EXPORT vtkPhastaReader : public vtkUnstructuredGridAlgorithm
 {
 public:
   static vtkPhastaReader *New();
-  vtkTypeMacro(vtkPhastaReader,vtkUnstructuredGridAlgorithm);
+  vtkTypeRevisionMacro(vtkPhastaReader,vtkUnstructuredGridAlgorithm);
   void PrintSelf(ostream& os, vtkIndent indent);
 
   // Description:
@@ -60,9 +65,6 @@ public:
                     int numOfComps,
                     int dataDependency,
                     const char* dataType);
-
-  void SetCachedGrid(vtkUnstructuredGrid*);
-  vtkGetObjectMacro(CachedGrid, vtkUnstructuredGrid);
 
 protected:
   vtkPhastaReader();
@@ -89,7 +91,11 @@ protected:
 private:
   char *GeometryFileName;
   char *FieldFileName;
-  vtkUnstructuredGrid* CachedGrid;
+
+  ////////////////////
+  vtkPVXMLParser* Parser;
+  char* FileName;
+  ///////////////////
 
   int NumberOfVariables; //number of variable in the field file
 
@@ -98,13 +104,21 @@ private:
                         const char targetstring[] );
   static void isBinary( const char iotype[] );
   static size_t typeSize( const char typestring[] );
+  //CHANGE////////////////////////////////////////////////////
+
+  static void queryphmpiio_( const char filename[],
+			     int *nfields, 
+			     int *nppf );
+  static void finalizephmpiio_( int *fileDescriptor );
+
+  //CHANGE END///////////////////////////////////////////////
   static int readHeader( FILE*       fileObject,
                          const char  phrase[],
                          int*        params,
                          int         expect );
-  static void SwapArrayByteOrder( void* array, 
-                                  int   nbytes, 
-                                  int   nItems );
+  static void SwapArrayByteOrder_( void* array, 
+				   int   nbytes, 
+				   int   nItems );
   static void openfile( const char filename[],
                         const char mode[],
                         int*  fileDescriptor );
