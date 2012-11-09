@@ -1254,8 +1254,7 @@ void vtkPhastaReader::ReadGeomFile(char* geomFileName,
 	/* read the connectivity information */
 	expect = 7;
 
-	//for(k=0;k<num_int_blocks;k++)
-	for(k=0;k<3;k++)
+	for(k=0;k<num_int_blocks;k++)
 	{
 
 		///CHANGE/////////////////////////////////////////////////////
