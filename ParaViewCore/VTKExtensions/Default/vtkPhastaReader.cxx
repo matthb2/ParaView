@@ -39,12 +39,10 @@ PURPOSE.  See the above copyright notice for more information.
 #include "vtkMultiPieceDataSet.h"
 
 //change end
-vtkCxxRevisionMacro(vtkPhastaReader, "$Revision: 1.11 $");
-vtkStandardNewMacro(vtkPhastaReader);
 
-#include <vtkstd/map>
-#include <vtkstd/vector>
-#include <vtkstd/string>
+#include <map>
+#include <vector>
+#include <string>
 #include <vtksys/ios/sstream>
 
 //CHANGE////////////////////////////////////////////////////////////////
@@ -98,15 +96,15 @@ struct vtkPhastaReaderInternal
 		int StartIndexInPhastaArray;
 		int NumberOfComponents;
 		int DataDependency; // 0-nodal, 1-elemental
-		vtkstd::string DataType; // "int" or "double"
-		vtkstd::string PhastaFieldTag;
+		std::string DataType; // "int" or "double"
+		std::string PhastaFieldTag;
 
 		FieldInfo() : StartIndexInPhastaArray(-1), NumberOfComponents(-1), DataDependency(-1), DataType(""), PhastaFieldTag("")
 		{
 		}
 	};
 
-	typedef vtkstd::map<vtkstd::string, FieldInfo> FieldInfoMapType;
+	typedef std::map<std::string, FieldInfo> FieldInfoMapType;
 	FieldInfoMapType FieldInfoMap;
 };
 
@@ -175,15 +173,17 @@ int PhastaIONextActiveIndex = 0; /* indicates next index to allocate */
 
 #define swap_char(A,B) { ucTmp = A; A = B ; B = ucTmp; }
 
-vtkstd::map< int , char* > LastHeaderKey;
-vtkstd::vector< FILE* > fileArray;
-vtkstd::vector< int > byte_order;
-vtkstd::vector< int > header_type;
+std::map< int , char* > LastHeaderKey;
+std::vector< FILE* > fileArray;
+std::vector< int > byte_order;
+std::vector< int > header_type;
 int DataSize=0;
 int LastHeaderNotFound = 0;
 int Wrong_Endian = 0 ;
 int Strict_Error = 0 ;
 int binary_format = 0;
+
+vtkStandardNewMacro(vtkPhastaReader)
 
 // the caller has the responsibility to delete the returned string
 char* vtkPhastaReader::StringStripper( const char  istring[] )
