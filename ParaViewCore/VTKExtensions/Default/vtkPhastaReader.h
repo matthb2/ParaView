@@ -43,7 +43,7 @@ class VTK_EXPORT vtkPhastaReader : public vtkUnstructuredGridAlgorithm
 {
 public:
   static vtkPhastaReader *New();
-  vtkTypeRevisionMacro(vtkPhastaReader,vtkUnstructuredGridAlgorithm);
+  vtkTypeMacro(vtkPhastaReader,vtkUnstructuredGridAlgorithm);
   void PrintSelf(ostream& os, vtkIndent indent);
 
   // Description:
