@@ -31,7 +31,8 @@
 
 #include <vtksys/SystemTools.hxx>
 
-#include <vtkstd/map>
+#include <map>
+#include <string>
 #include <vtksys/ios/sstream>
 
 int NUM_PIECES;
@@ -64,17 +65,14 @@ struct vtkPPhastaReaderInternal
       }
   };
 
-  typedef vtkstd::map<int, TimeStepInfo> TimeStepInfoMapType;
+  typedef std::map<int, TimeStepInfo> TimeStepInfoMapType;
   TimeStepInfoMapType TimeStepInfoMap;
-  typedef vtkstd::map<int, vtkSmartPointer<vtkUnstructuredGrid> >
+  typedef std::map<int, vtkSmartPointer<vtkUnstructuredGrid> >
   CachedGridsMapType;
   CachedGridsMapType CachedGrids;
 };
-
 //----------------------------------------------------------------------------
-vtkCxxRevisionMacro(vtkPPhastaReader, "$Revision: 1.6 $");
 vtkStandardNewMacro(vtkPPhastaReader);
-
 //----------------------------------------------------------------------------
 vtkPPhastaReader::vtkPPhastaReader()
 {
@@ -128,13 +126,13 @@ int vtkPPhastaReader::RequestData(vtkInformation*,
     outInfo->Get(vtkStreamingDemandDrivenPipeline::TIME_STEPS());
 
   // Check if a particular time was requested.
-  if(outInfo->Has(vtkStreamingDemandDrivenPipeline::UPDATE_TIME_STEPS()))
+  if(outInfo->Has(vtkStreamingDemandDrivenPipeline::UPDATE_TIME_STEP()))
     {
     // Get the requested time step. We only supprt requests of a single time
     // step in this reader right now
-    double *requestedTimeSteps =
-      outInfo->Get(vtkStreamingDemandDrivenPipeline::UPDATE_TIME_STEPS());
-    double timeValue = requestedTimeSteps[0];
+    double requestedTimeSteps =
+      outInfo->Get(vtkStreamingDemandDrivenPipeline::UPDATE_TIME_STEP());
+    double timeValue = requestedTimeSteps;
 
     // find the first time value larger than requested time value
     // this logic could be improved
@@ -310,10 +308,10 @@ int vtkPPhastaReader::RequestData(vtkInformation*,
       }
 
     vtksys_ios::ostringstream geomFName;
-    vtkstd::string gpath = vtksys::SystemTools::GetFilenamePath(geom_name);
+    std::string gpath = vtksys::SystemTools::GetFilenamePath(geom_name);
     if (gpath.empty() || !vtksys::SystemTools::FileIsFullPath(gpath.c_str()))
       {
-      vtkstd::string path = vtksys::SystemTools::GetFilenamePath(this->FileName);
+      std::string path = vtksys::SystemTools::GetFilenamePath(this->FileName);
       if (!path.empty())
         {
         geomFName << path.c_str() << "/";
@@ -324,7 +322,7 @@ int vtkPPhastaReader::RequestData(vtkInformation*,
 
     vtksys_ios::ostringstream fieldFName;
     // try to strip out the path of file, if it's a full path file name
-    vtkstd::string fpath = vtksys::SystemTools::GetFilenamePath(field_name);
+    std::string fpath = vtksys::SystemTools::GetFilenamePath(field_name);
 
     ///////////////////////////////////////////
     FILE_PATH = new char[fpath.size()+1];
@@ -333,7 +331,7 @@ int vtkPPhastaReader::RequestData(vtkInformation*,
 
     if (fpath.empty() || !vtksys::SystemTools::FileIsFullPath(fpath.c_str()))
       {
-      vtkstd::string path = vtksys::SystemTools::GetFilenamePath(this->FileName); // FileName is the .pht file
+      std::string path = vtksys::SystemTools::GetFilenamePath(this->FileName); // FileName is the .pht file
       if (!path.empty())
         {
           /////////////////////////////////////////
@@ -392,8 +390,8 @@ int vtkPPhastaReader::RequestData(vtkInformation*,
 
   if (steps)
     {
-    output->GetInformation()->Set(vtkDataObject::DATA_TIME_STEPS(),
-                                  steps+this->ActualTimeStep, 1);
+    output->GetInformation()->Set(vtkDataObject::DATA_TIME_STEP(),
+                                  steps[this->ActualTimeStep]);
     }
 
   vtkDebugMacro("End of PP RequestData()\n, total open time is " << opentime_total);
@@ -564,7 +562,7 @@ int vtkPPhastaReader::RequestInformation(vtkInformation*,
         if (strcmp("Field", nested2->GetName()) == 0)
           {
           numberOfFields2++;
-          vtkstd::string paraviewFieldTagStr, dataTypeStr;
+          std::string paraviewFieldTagStr, dataTypeStr;
           const char* paraviewFieldTag = 0;
           paraviewFieldTag = nested2->GetAttribute("paraview_field_tag");
           if (!paraviewFieldTag)
