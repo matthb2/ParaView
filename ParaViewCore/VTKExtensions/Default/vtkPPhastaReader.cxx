@@ -14,12 +14,16 @@
 =========================================================================*/
 #include "vtkPPhastaReader.h"
 
+#include "vtkAppendFilter.h"
 #include "vtkCellData.h"
+#include "vtkCompositeDataIterator.h"
 #include "vtkFieldData.h"
+#include "vtkGarbageCollector.h"
 #include "vtkInformation.h"
 #include "vtkInformationVector.h"
 #include "vtkMultiBlockDataSet.h"
 #include "vtkMultiPieceDataSet.h"
+#include "vtkNew.h"
 #include "vtkObjectFactory.h"
 #include "vtkPointData.h"
 #include "vtkPVXMLElement.h"
@@ -393,6 +397,25 @@ int vtkPPhastaReader::RequestData(vtkInformation*,
     output->GetInformation()->Set(vtkDataObject::DATA_TIME_STEP(),
                                   steps[this->ActualTimeStep]);
     }
+
+  vtkNew<vtkAppendFilter> af;
+  vtkCompositeDataIterator* iter = MultiPieceDataSet->NewIterator();
+  vtkGarbageCollector::DeferredCollectionPush();
+  for (iter->InitTraversal(); !iter->IsDoneWithTraversal(); iter->GoToNextItem())
+    {
+    vtkDataSet* ds = dynamic_cast<vtkDataSet*>(iter->GetCurrentDataObject());
+    if (ds)
+      {
+      af->AddInputDataObject(ds);
+      }
+    }
+  vtkGarbageCollector::DeferredCollectionPop();
+  iter->Delete();
+
+  af->Update();
+  MultiPieceDataSet->SetNumberOfPieces(0);
+  MultiPieceDataSet->SetNumberOfPieces(numProcPieces);
+  MultiPieceDataSet->SetPiece(piece, af->GetOutput());
 
   vtkDebugMacro("End of PP RequestData()\n, total open time is " << opentime_total);
   // if it's not too many printf, print it out
